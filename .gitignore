@@ -10,8 +10,14 @@
 !.yarn/releases
 !.yarn/versions
 
+
+
 # testing
 /coverage
+
+# Local datasets (do not commit)
+data/
+
 
 # next.js
 /.next/
@@ -33,6 +39,7 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 !.env.example
+
 
 
 # vercel
