@@ -19,6 +19,255 @@
   }
 }
 
+/* AI Demo Card Animations */
+@layer components {
+  .ai-demo-card {
+    border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+    padding: 24px 24px 20px;
+    max-width: 380px;
+  }
+
+  .ai-demo {
+    position: relative;
+    overflow: hidden;
+    min-height: 260px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .ai-demo__header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #1d4ed8;
+  }
+
+  .ai-demo__status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: #22c55e;
+  }
+
+  .ai-demo__title {
+    letter-spacing: 0.08em;
+  }
+
+  .ai-demo__state {
+    position: relative;
+    font-size: 13px;
+    color: #0f172a;
+  }
+
+  .ai-demo__state--skeleton {
+    animation: aiSkeletonVisibility 6s linear infinite;
+  }
+
+  .ai-demo__state--summary {
+    animation: aiSummaryVisibility 6s linear infinite;
+  }
+
+  .ai-demo__rating-skeleton,
+  .ai-demo__pill-skeleton,
+  .ai-demo__recommend-skeleton {
+    border-radius: 12px;
+    background: linear-gradient(
+      90deg,
+      #e5e7eb 0%,
+      #f3f4f6 50%,
+      #e5e7eb 100%
+    );
+    background-size: 200% 100%;
+    animation: aiShimmer 1.4s ease-in-out infinite;
+  }
+
+  .ai-demo__rating-skeleton {
+    height: 70px;
+    margin-bottom: 16px;
+  }
+
+  .ai-demo__row {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .ai-demo__pill-skeleton {
+    height: 52px;
+  }
+
+  .ai-demo__recommend-skeleton {
+    height: 40px;
+    margin-top: 4px;
+  }
+
+  .ai-demo__rating-box {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+
+  .ai-demo__rating-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+    margin-bottom: 4px;
+  }
+
+  .ai-demo__rating-value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1d4ed8;
+  }
+
+  .ai-demo__rating-value span {
+    font-size: 14px;
+    font-weight: 500;
+    color: #64748b;
+    margin-left: 2px;
+  }
+
+  .ai-demo__rating-meta {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 2px;
+  }
+
+  .ai-demo__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .ai-demo__metric {
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    padding: 8px 10px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+  }
+
+  .ai-demo__metric div:last-child {
+    font-weight: 600;
+    color: #1d4ed8;
+  }
+
+  .ai-demo__recommend {
+    margin-top: 4px;
+    border-radius: 10px;
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+
+  .ai-demo__button {
+    margin-top: 4px;
+    align-self: flex-start;
+    border-radius: 999px;
+    border: 1px solid #e2e8f0;
+    padding: 6px 12px;
+    font-size: 11px;
+    color: #0f172a;
+    background: #ffffff;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: default;
+    opacity: 0.9;
+  }
+
+  .ai-demo__cursor {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #2563eb;
+    box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.3), 0 0 12px rgba(37, 99, 235, 0.6);
+    transform: translate(220px, 40px);
+    opacity: 0;
+    z-index: 50;
+    animation: aiCursorMove 6s ease-in-out infinite;
+  }
+}
+
+@layer utilities {
+  @keyframes aiCursorMove {
+    0% {
+      opacity: 0;
+      transform: translate(260px, -40px);
+    }
+    10% {
+      opacity: 1;
+    }
+    25% {
+      transform: translate(190px, 150px);
+    }
+    28% {
+      transform: translate(190px, 150px) scale(0.9);
+    }
+    32% {
+      transform: translate(190px, 150px) scale(1);
+    }
+    70% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0;
+      transform: translate(240px, 190px);
+    }
+  }
+
+  @keyframes aiSkeletonVisibility {
+    0%, 22% {
+      opacity: 0;
+    }
+    28%, 65% {
+      opacity: 1;
+    }
+    75%, 100% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes aiSummaryVisibility {
+    0%, 55% {
+      opacity: 0;
+    }
+    68%, 100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes aiShimmer {
+    0% {
+      background-position: -150% 0;
+    }
+    100% {
+      background-position: 150% 0;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .ai-demo__cursor {
+    display: none;
+  }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
