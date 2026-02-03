@@ -1,144 +1,187 @@
-'use client';
+"use client";
 
 import AiSummaryDemo from "./AiSummaryDemo";
 
 export default function HeroSection() {
   return (
-    <>
-      {/* Hero Section */}
-      <section
+    <section
+      style={{
+        paddingTop: "80px",
+        paddingBottom: "120px",
+        background:
+          "radial-gradient(circle at top left, rgba(56,189,248,0.18), transparent 55%), radial-gradient(circle at bottom right, rgba(59,130,246,0.18), transparent 55%), linear-gradient(135deg, #f9fafb 0%, #e0f2fe 100%)",
+        borderBottom: "1px solid #e5e7eb",
+      }}
+    >
+      <div
         style={{
-          paddingTop: "80px",
-          paddingBottom: "60px",
-          background: "white",
+          maxWidth: "1280px",
+          margin: "0 auto",
+          paddingLeft: "32px",
+          paddingRight: "32px",
+          display: "grid",
+          gridTemplateColumns: "minmax(0, 1.1fr) minmax(0, 0.9fr)",
+          gap: "72px",
+          alignItems: "center",
         }}
       >
-        <div
-          style={{
-            maxWidth: "1100px",
-            margin: "0 auto",
-            paddingLeft: "32px",
-            paddingRight: "32px",
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "64px",
-            alignItems: "center",
-          }}
-        >
-          {/* Left Column - Copy */}
-          <div>
-            <h1
-              style={{
-                fontSize: "48px",
-                fontWeight: 800,
-                lineHeight: 1.15,
-                color: "#0f172a",
-                margin: "0 0 20px 0",
-                letterSpacing: "-0.02em",
-              }}
-            >
-              Make Smarter Buying Decisions
-            </h1>
-            <p
-              style={{
-                fontSize: "18px",
-                color: "#475569",
-                margin: "0 0 12px 0",
-                lineHeight: 1.6,
-                fontWeight: 500,
-              }}
-            >
-              Powered by real user reviews and AI insights
-            </p>
-            <p
-              style={{
-                fontSize: "14px",
-                color: "#94a3b8",
-                margin: "0 0 40px 0",
-                lineHeight: 1.7,
-              }}
-            >
-              No sponsored bias. Just transparency and intelligence.
-            </p>
-
-            {/* CTA Buttons */}
-            <div
-              style={{
-                display: "flex",
-                gap: "16px",
-                flexWrap: "wrap",
-              }}
-            >
-              <a
-                href="/assistant"
-                style={{
-                  display: "inline-block",
-                  padding: "14px 32px",
-                  backgroundColor: "#2563eb",
-                  color: "white",
-                  textDecoration: "none",
-                  borderRadius: "12px",
-                  fontSize: "15px",
-                  fontWeight: 600,
-                  transition: "all 0.2s ease",
-                  boxShadow: "0 4px 12px rgba(37, 99, 235, 0.15)",
-                }}
-                onMouseEnter={(e) => {
-                  const el = e.target as HTMLAnchorElement;
-                  el.style.backgroundColor = "#1d4ed8";
-                  el.style.boxShadow = "0 8px 20px rgba(37, 99, 235, 0.25)";
-                  el.style.transform = "translateY(-2px)";
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.target as HTMLAnchorElement;
-                  el.style.backgroundColor = "#2563eb";
-                  el.style.boxShadow = "0 4px 12px rgba(37, 99, 235, 0.15)";
-                  el.style.transform = "translateY(0)";
-                }}
-              >
-                Find the Right Product
-              </a>
-              <a
-                href="/products"
-                style={{
-                  display: "inline-block",
-                  padding: "14px 32px",
-                  backgroundColor: "white",
-                  color: "#2563eb",
-                  textDecoration: "none",
-                  borderRadius: "12px",
-                  fontSize: "15px",
-                  fontWeight: 600,
-                  border: "1.5px solid #2563eb",
-                  transition: "all 0.2s ease",
-                }}
-                onMouseEnter={(e) => {
-                  const el = e.target as HTMLAnchorElement;
-                  el.style.backgroundColor = "#eff6ff";
-                }}
-                onMouseLeave={(e) => {
-                  const el = e.target as HTMLAnchorElement;
-                  el.style.backgroundColor = "white";
-                }}
-              >
-                Browse Products
-              </a>
-            </div>
-          </div>
-
-          {/* Right Column - Visual */}
+        {/* Left Column */}
+        <div>
+          {/* Small AI badge – helps with "match to real world" & recognition */}
           <div
             style={{
-              display: "flex",
-              justifyContent: "center",
+              display: "inline-flex",
               alignItems: "center",
-              minHeight: "400px",
+              gap: 8,
+              padding: "6px 12px",
+              borderRadius: 9999,
+              backgroundColor: "rgba(15,23,42,0.04)",
+              border: "1px solid rgba(148,163,184,0.4)",
+              marginBottom: 16,
             }}
           >
-            <AiSummaryDemo />
+            <span
+              style={{
+                width: 8,
+                height: 8,
+                borderRadius: "9999px",
+                background:
+                  "radial-gradient(circle at 30% 30%, #4ade80, #22c55e)",
+              }}
+            />
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 500,
+                color: "#0f172a",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+              }}
+            >
+              AI-powered review intelligence
+            </span>
+          </div>
+
+          <h1
+            style={{
+              fontSize: "52px",
+              fontWeight: 800,
+              lineHeight: 1.1,
+              color: "#0f172a",
+              margin: "0 0 20px 0",
+              letterSpacing: "-0.02em",
+            }}
+          >
+            Make Smarter Buying Decisions
+          </h1>
+
+          <p
+            style={{
+              fontSize: "18px",
+              color: "#475569",
+              margin: "0 0 12px 0",
+              lineHeight: 1.6,
+              fontWeight: 500,
+            }}
+          >
+            AI-powered insights from real user reviews.
+          </p>
+
+          <p
+            style={{
+              fontSize: "16px",
+              color: "#64748b",
+              margin: "0 0 40px 0",
+              lineHeight: 1.7,
+            }}
+          >
+            Skip the marketing noise. Our AI analyzes thousands of real user reviews to help you find products that actually match what you're looking for.
+          </p>
+
+          <div
+            style={{
+              marginTop: 32,
+              display: "flex",
+              gap: 16,
+              flexWrap: "wrap",
+            }}
+          >
+            <a
+              href="/products"
+              style={{
+                padding: "12px 24px",
+                borderRadius: 9999,
+                backgroundColor: "#0284c7",
+                color: "#ffffff",
+                fontSize: 14,
+                fontWeight: 600,
+                textDecoration: "none",
+                boxShadow: "0 10px 25px rgba(37, 99, 235, 0.25)",
+                transition: "background-color 0.2s ease, transform 0.2s ease",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+              }}
+            >
+              Explore Products
+            </a>
+            <a
+              href="/ai-search"
+              style={{
+                padding: "12px 24px",
+                borderRadius: 9999,
+                border: "1px solid #0ea5e9",
+                backgroundColor: "rgba(255,255,255,0.7)",
+                color: "#0369a1",
+                fontSize: 14,
+                fontWeight: 600,
+                textDecoration: "none",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 8,
+                backdropFilter: "blur(8px)",
+                transition: "background-color 0.2s ease, border-color 0.2s ease",
+              }}
+            >
+              <span
+                style={{
+                  display: "inline-block",
+                  width: 8,
+                  height: 8,
+                  borderRadius: "9999px",
+                  background: "radial-gradient(circle at 30% 30%, #22c55e, #16a34a)",
+                }}
+              />
+              AI Search
+            </a>
+          </div>
+
+          <div
+            style={{
+              marginTop: "60px",
+              display: "grid",
+              gridTemplateColumns: "1fr 1fr",
+              gap: "32px",
+            }}
+          >
+            <div>
+              <div style={{ fontSize: "24px", fontWeight: 700, color: "#0f172a" }}>1000+</div>
+              <div style={{ fontSize: "13px", color: "#64748b", marginTop: 4 }}>Products Analyzed</div>
+            </div>
+            <div>
+              <div style={{ fontSize: "24px", fontWeight: 700, color: "#0f172a" }}>50K+</div>
+              <div style={{ fontSize: "13px", color: "#64748b", marginTop: 4 }}>Real Reviews</div>
+            </div>
           </div>
         </div>
-      </section>
-    </>
+
+        {/* Right Column */}
+        <div>
+          <AiSummaryDemo />
+        </div>
+      </div>
+    </section>
   );
 }

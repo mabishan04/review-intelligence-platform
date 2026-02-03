@@ -1,21 +1,26 @@
 import { NextResponse } from "next/server";
-import { pool } from "@/lib/db";
+import { mockProducts, mockReviews, getProductStats } from "@/lib/mockData";
 
 export async function GET() {
-  const result = await pool.query(`
-    select
-      p.id,
-      p.title,
-      p.brand,
-      p.category,
-      p.price_cents,
-      coalesce(avg(r.rating), 0)::numeric(10,2) as avg_rating,
-      count(r.id)::int as review_count
-    from products p
-    left join reviews r on r.product_id = p.id
-    group by p.id
-    order by review_count desc, avg_rating desc, p.id asc
-  `);
+  const products = Object.entries(mockProducts).map(([id, product]) => {
+    const { avgRating, count } = getProductStats(id);
+    return {
+      id: isNaN(parseInt(id)) ? id : parseInt(id),
+      title: product.title,
+      brand: product.brand,
+      category: product.category,
+      price_cents: product.price_cents,
+      avg_rating: parseFloat(avgRating),
+      review_count: count,
+    };
+  });
 
-  return NextResponse.json({ products: result.rows });
+  // Sort by review count, then rating, then ID
+  products.sort((a, b) => {
+    if (b.review_count !== a.review_count) return b.review_count - a.review_count;
+    if (b.avg_rating !== a.avg_rating) return b.avg_rating - a.avg_rating;
+    return String(a.id).localeCompare(String(b.id));
+  });
+
+  return NextResponse.json({ products });
 }

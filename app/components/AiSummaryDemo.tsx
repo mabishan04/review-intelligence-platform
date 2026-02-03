@@ -1,3 +1,5 @@
+"use client";
+
 import styles from "./AiSummaryDemo.module.css";
 
 export default function AiSummaryDemo() {

@@ -1,12 +1,26 @@
 import { NextResponse } from "next/server";
-import { pool } from "@/lib/db";
+import { getAllProducts } from "@/lib/firestoreHelper";
 
 export async function GET() {
-  const result = await pool.query(`
-    select id, title, brand, category, price_cents
-    from products
-    order by id asc
-  `);
+  try {
+    const products = await getAllProducts();
+    
+    const formattedProducts = products.map((p) => ({
+      id: p.id,
+      title: p.title,
+      brand: p.brand,
+      category: p.category,
+      price_cents: p.price_cents,
+      createdBy: p.createdBy,
+      createdAt: p.createdAt,
+    }));
 
-  return NextResponse.json({ products: result.rows });
+    return NextResponse.json({ products: formattedProducts });
+  } catch (error) {
+    console.error("Error fetching products:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch products" },
+      { status: 500 }
+    );
+  }
 }
