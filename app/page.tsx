@@ -9,7 +9,8 @@ type CatalogItem = {
   title: string;
   brand: string | null;
   category: string;
-  price_cents: number | null;
+  priceMin_cents: number | null;
+  priceMax_cents: number | null;
   avg_rating: string;
   review_count: number;
 };
@@ -35,7 +36,8 @@ async function getCatalog(): Promise<CatalogItem[]> {
         title: "MacBook Pro 14-inch",
         brand: "Apple",
         category: "Laptops",
-        price_cents: 199999,
+        priceMin_cents: 169999,
+        priceMax_cents: 219999,
         avg_rating: "4.8",
         review_count: 2840,
       },
@@ -44,7 +46,8 @@ async function getCatalog(): Promise<CatalogItem[]> {
         title: "Dell XPS 13",
         brand: "Dell",
         category: "Laptops",
-        price_cents: 99999,
+        priceMin_cents: 89999,
+        priceMax_cents: 119999,
         avg_rating: "4.6",
         review_count: 1920,
       },
@@ -53,7 +56,8 @@ async function getCatalog(): Promise<CatalogItem[]> {
         title: "iPhone 15 Pro",
         brand: "Apple",
         category: "Phones",
-        price_cents: 99999,
+        priceMin_cents: 99999,
+        priceMax_cents: 119999,
         avg_rating: "4.7",
         review_count: 5620,
       },
@@ -62,7 +66,8 @@ async function getCatalog(): Promise<CatalogItem[]> {
         title: "Samsung Galaxy S24",
         brand: "Samsung",
         category: "Phones",
-        price_cents: 89999,
+        priceMin_cents: 79999,
+        priceMax_cents: 99999,
         avg_rating: "4.5",
         review_count: 3440,
       },
@@ -71,7 +76,8 @@ async function getCatalog(): Promise<CatalogItem[]> {
         title: "Sony WH-1000XM5",
         brand: "Sony",
         category: "Headphones",
-        price_cents: 39999,
+        priceMin_cents: 34999,
+        priceMax_cents: 39999,
         avg_rating: "4.9",
         review_count: 4120,
       },
@@ -80,7 +86,8 @@ async function getCatalog(): Promise<CatalogItem[]> {
         title: "iPad Pro 12.9",
         brand: "Apple",
         category: "Tablets",
-        price_cents: 119999,
+        priceMin_cents: 99999,
+        priceMax_cents: 129999,
         avg_rating: "4.8",
         review_count: 2250,
       },
@@ -89,7 +96,8 @@ async function getCatalog(): Promise<CatalogItem[]> {
         title: "Samsung Galaxy Tab S9",
         brand: "Samsung",
         category: "Tablets",
-        price_cents: 79999,
+        priceMin_cents: 69999,
+        priceMax_cents: 89999,
         avg_rating: "4.4",
         review_count: 1680,
       },
@@ -98,7 +106,8 @@ async function getCatalog(): Promise<CatalogItem[]> {
         title: "Google Pixel 8 Pro",
         brand: "Google",
         category: "Phones",
-        price_cents: 99999,
+        priceMin_cents: 89999,
+        priceMax_cents: 109999,
         avg_rating: "4.6",
         review_count: 2980,
       },

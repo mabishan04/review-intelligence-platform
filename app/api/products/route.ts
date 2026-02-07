@@ -10,7 +10,8 @@ export async function GET() {
       title: p.title,
       brand: p.brand,
       category: p.category,
-      price_cents: p.price_cents,
+      priceMin_cents: p.priceMin_cents,
+      priceMax_cents: p.priceMax_cents,
       createdBy: p.createdBy,
       createdAt: p.createdAt,
     }));

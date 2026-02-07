@@ -5,6 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../components/AuthProvider";
 import { signInWithEmail, signUpWithEmail, signInWithGoogle } from "@/lib/authClient";
 
+export const dynamic = "force-dynamic";
+
 export default function AuthPage() {
   const router = useRouter();
   const searchParams = useSearchParams();

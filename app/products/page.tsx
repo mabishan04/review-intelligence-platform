@@ -3,14 +3,23 @@ import ProductFormModal from "../components/ProductFormModal";
 import ProductsPageClient from "./ProductsPageClient";
 import { mockProducts, mockReviews, getProductStats } from "@/lib/mockData";
 
+// Always revalidate to show latest reviews and products
+export const revalidate = 0;
+
 type CatalogItem = {
   id: number | string;
   title: string;
   brand: string | null;
   category: string;
-  price_cents: number | null;
+  priceMin_cents: number | null;
+  priceMax_cents: number | null;
   avg_rating: string;
   review_count: number;
+  // AI fields
+  imageUrl?: string | null;
+  imageSource?: 'user_uploaded' | 'ai_generated' | 'official';
+  verificationStatus?: 'verified' | 'unverified' | 'flagged';
+  aiRiskScore?: number | null;
 };
 
 async function getCatalog(): Promise<CatalogItem[]> {
@@ -25,7 +34,21 @@ async function getCatalog(): Promise<CatalogItem[]> {
     if (!data.products || !Array.isArray(data.products)) {
       throw new Error("Invalid data");
     }
-    return data.products;
+    // API returns all fields including priceMin_cents, priceMax_cents, imageUrl, imageSource, verificationStatus, aiRiskScore
+    return data.products.map((p: any) => ({
+      id: p.id,
+      title: p.title,
+      brand: p.brand,
+      category: p.category,
+      priceMin_cents: p.priceMin_cents,
+      priceMax_cents: p.priceMax_cents,
+      avg_rating: p.avg_rating || "0",
+      review_count: p.review_count || 0,
+      imageUrl: p.imageUrl,
+      imageSource: p.imageSource,
+      verificationStatus: p.verificationStatus,
+      aiRiskScore: p.aiRiskScore,
+    }));
   } catch (error) {
     // Use shared mock data that's always in sync
     const products: CatalogItem[] = [];
@@ -40,9 +63,14 @@ async function getCatalog(): Promise<CatalogItem[]> {
         title: product.title,
         brand: product.brand,
         category: product.category,
-        price_cents: product.price_cents,
+        priceMin_cents: (product as any).priceMin_cents || (product as any).price_cents || null,
+        priceMax_cents: (product as any).priceMax_cents || (product as any).price_cents || null,
         avg_rating: avgRating,
         review_count: count,
+        imageUrl: (product as any).imageUrl || null,
+        imageSource: (product as any).imageSource,
+        verificationStatus: (product as any).verificationStatus,
+        aiRiskScore: (product as any).aiRiskScore,
       });
     }
     

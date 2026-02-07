@@ -1,12 +1,11 @@
 // app/api/reviews/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { mockReviews } from "@/lib/mockData";
-import { saveReviews } from "@/lib/persistentData";
+import { loadReviews, saveReviews } from "@/lib/persistentData";
 
 // Helper: find which product a review belongs to (search across all products)
-function findReviewById(reviewId: string) {
-  for (const [productId, list] of Object.entries(mockReviews)) {
-    const index = list.findIndex((r: any) => r.id === reviewId);
+function findReviewById(reviewId: string, allReviews: Record<string, any[]>) {
+  for (const [productId, list] of Object.entries(allReviews)) {
+    const index = (list as any[]).findIndex((r: any) => r.id === reviewId);
     if (index !== -1) {
       return { productId, index };
     }
@@ -23,7 +22,10 @@ export async function PUT(
     const { id: reviewId } = await params;
     const body = await req.json();
 
-    const location = findReviewById(reviewId);
+    // Always reload from disk to get latest data
+    const allReviews = loadReviews();
+
+    const location = findReviewById(reviewId, allReviews);
     if (!location) {
       return NextResponse.json(
         { error: "Review not found" },
@@ -32,7 +34,7 @@ export async function PUT(
     }
 
     const { productId, index } = location;
-    const existing = (mockReviews as any)[productId][index];
+    const existing = (allReviews as any)[productId][index];
 
     // Update allowed fields
     const updated = {
@@ -47,8 +49,8 @@ export async function PUT(
       updated_at: new Date().toISOString(),
     };
 
-    (mockReviews as any)[productId][index] = updated;
-    saveReviews(mockReviews);
+    (allReviews as any)[productId][index] = updated;
+    saveReviews(allReviews);
 
     return NextResponse.json({ review: updated }, { status: 200 });
   } catch (err) {
@@ -68,7 +70,10 @@ export async function DELETE(
   try {
     const { id: reviewId } = await params;
 
-    const location = findReviewById(reviewId);
+    // Always reload from disk to get latest data
+    const allReviews = loadReviews();
+
+    const location = findReviewById(reviewId, allReviews);
     if (!location) {
       return NextResponse.json(
         { error: "Review not found" },
@@ -77,10 +82,10 @@ export async function DELETE(
     }
 
     const { productId, index } = location;
-    const list = (mockReviews as any)[productId];
+    const list = (allReviews as any)[productId] as any[];
     const [deleted] = list.splice(index, 1);
 
-    saveReviews(mockReviews);
+    saveReviews(allReviews);
 
     return NextResponse.json(
       { success: true, review: deleted },

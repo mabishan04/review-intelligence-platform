@@ -40,8 +40,8 @@ export default function ListProductForm({ onSuccess }: ListProductFormProps) {
   const [title, setTitle] = useState('');
   const [brand, setBrand] = useState('');
   const [category, setCategory] = useState('');
-  const [price, setPrice] = useState('');
-  const [priceUnknown, setPriceUnknown] = useState(false);
+  const [priceMin, setPriceMin] = useState('');
+  const [priceMax, setPriceMax] = useState('');
   const [checking, setChecking] = useState(false);
   const [duplicateInfo, setDuplicateInfo] = useState<DuplicateInfo | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +50,8 @@ export default function ListProductForm({ onSuccess }: ListProductFormProps) {
   // Validation helpers
   const titleValid = title.trim().length > 2;
   const categoryValid = category.length > 0;
-  const priceValid = priceUnknown || price.trim().length > 0;
+  // Price is valid if at least one of min or max is provided (or both are empty for "price varies")
+  const priceValid = true; // Both prices are optional
 
   // Real-time duplicate check
   useEffect(() => {
@@ -109,7 +110,8 @@ export default function ListProductForm({ onSuccess }: ListProductFormProps) {
           title,
           brand,
           category,
-          price: priceUnknown ? null : price,
+          priceMin: priceMin.trim() ? Number(priceMin) : null,
+          priceMax: priceMax.trim() ? Number(priceMax) : null,
         }),
       });
 
@@ -178,7 +180,7 @@ export default function ListProductForm({ onSuccess }: ListProductFormProps) {
             fontSize: 13,
           }}
         >
-          {error}
+          <div style={{ fontWeight: 600, marginBottom: 4 }}>✗ {error}</div>
         </div>
       )}
 
@@ -267,66 +269,92 @@ export default function ListProductForm({ onSuccess }: ListProductFormProps) {
           </div>
         </div>
 
-        {/* Price Input with Unknown Option */}
+        {/* Price Range Input */}
         <div>
           <label style={{ display: 'block', fontSize: 13, marginBottom: 4, fontWeight: 500 }}>
-            Price (USD)
+            Price Range (USD)
           </label>
-          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <div style={{ position: 'relative', flex: 1 }}>
-              <span
-                style={{
-                  position: 'absolute',
-                  left: '12px',
-                  top: '10px',
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: '#6b7280',
-                }}
-              >
-                $
-              </span>
-              <input
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="1499"
-                type="number"
-                min="0"
-                disabled={priceUnknown}
-                style={{
-                  width: '100%',
-                  padding: '10px 12px 10px 28px',
-                  borderRadius: 8,
-                  border: '1px solid #d1d5db',
-                  fontSize: 14,
-                  opacity: priceUnknown ? 0.5 : 1,
-                  cursor: priceUnknown ? 'not-allowed' : 'text',
-                }}
-              />
+          <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 10 }}>
+            Prices vary by location and retailer. Enter a range or leave blank if unknown.
+          </p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            {/* Min Price Input */}
+            <div>
+              <label style={{ display: 'block', fontSize: 12, marginBottom: 4, color: '#6b7280' }}>
+                Min Price
+              </label>
+              <div style={{ position: 'relative' }}>
+                <span
+                  style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '10px',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: '#6b7280',
+                  }}
+                >
+                  $
+                </span>
+                <input
+                  value={priceMin}
+                  onChange={(e) => setPriceMin(e.target.value)}
+                  placeholder="1299"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px 10px 28px',
+                    borderRadius: 8,
+                    border: '1px solid #d1d5db',
+                    fontSize: 14,
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Max Price Input */}
+            <div>
+              <label style={{ display: 'block', fontSize: 12, marginBottom: 4, color: '#6b7280' }}>
+                Max Price
+              </label>
+              <div style={{ position: 'relative' }}>
+                <span
+                  style={{
+                    position: 'absolute',
+                    left: '12px',
+                    top: '10px',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: '#6b7280',
+                  }}
+                >
+                  $
+                </span>
+                <input
+                  value={priceMax}
+                  onChange={(e) => setPriceMax(e.target.value)}
+                  placeholder="1499"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px 10px 28px',
+                    borderRadius: 8,
+                    border: '1px solid #d1d5db',
+                    fontSize: 14,
+                  }}
+                />
+              </div>
             </div>
           </div>
-          <label
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              marginTop: 8,
-              fontSize: 13,
-              cursor: 'pointer',
-              color: '#6b7280',
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={priceUnknown}
-              onChange={(e) => {
-                setPriceUnknown(e.target.checked);
-                if (e.target.checked) setPrice('');
-              }}
-              style={{ cursor: 'pointer' }}
-            />
-            Price not sure
-          </label>
+          {priceMin && priceMax && Number(priceMin) > Number(priceMax) && (
+            <div style={{ fontSize: 12, color: '#dc2626', marginTop: 8 }}>
+              ⚠️ Min price should be less than max price
+            </div>
+          )}
         </div>
 
         {/* Duplicate Detection - Enhanced UI */}

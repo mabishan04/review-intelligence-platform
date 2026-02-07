@@ -8,9 +8,14 @@ type CatalogItem = {
   title: string;
   brand: string | null;
   category: string;
-  price_cents: number | null;
+  priceMin_cents: number | null;
+  priceMax_cents: number | null;
   avg_rating: string;
   review_count: number;
+  imageUrl?: string | null;
+  imageSource?: "user_uploaded" | "ai_generated" | "official";
+  verificationStatus?: "verified" | "unverified" | "flagged";
+  aiRiskScore?: number | null;
 };
 
 export default function ProductsPageClient({
@@ -46,8 +51,14 @@ export default function ProductsPageClient({
         return parseFloat(b.avg_rating) - parseFloat(a.avg_rating);
       }
       if (sortBy === "price") {
-        const pa = a.price_cents ?? Infinity;
-        const pb = b.price_cents ?? Infinity;
+        // For price sorting, use the min price if available, otherwise max, otherwise Infinity
+        const getPrice = (item: CatalogItem) => {
+          if (item.priceMin_cents !== null) return item.priceMin_cents;
+          if (item.priceMax_cents !== null) return item.priceMax_cents;
+          return Infinity;
+        };
+        const pa = getPrice(a);
+        const pb = getPrice(b);
         return pa - pb; // lowest price first
       }
       if (sortBy === "reviews") {

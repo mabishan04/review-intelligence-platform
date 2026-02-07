@@ -23,8 +23,10 @@ let reviewsByProduct: Record<string, Review[]> = loadReviews();
 export const mockProducts = products;
 export const mockReviews = reviewsByProduct;
 
-// Helper: average rating + count
+// Helper: average rating + count (always reads fresh from disk for real-time updates)
 export function getProductStats(productId: string) {
+  // Always reload from disk to get real-time review data
+  reviewsByProduct = loadReviews();
   const list = reviewsByProduct[productId] || [];
   const count = list.length;
   const avgRating =
@@ -47,7 +49,8 @@ export function createProduct(input: {
   title: string;
   brand: string | null;
   category: string;
-  price_cents: number | null;
+  priceMin_cents: number | null;
+  priceMax_cents: number | null;
 }): Product {
   const id = getNextProductId();
 
@@ -56,7 +59,8 @@ export function createProduct(input: {
     title: input.title.trim(),
     brand: input.brand ? input.brand.trim() : null,
     category: input.category.trim(),
-    price_cents: input.price_cents,
+    priceMin_cents: input.priceMin_cents,
+    priceMax_cents: input.priceMax_cents,
   };
 
   products[id] = product;

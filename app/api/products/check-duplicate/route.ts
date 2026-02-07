@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { findSimilarProduct } from '@/lib/duplicateChecker';
 import { getAllProducts } from '@/lib/firestoreHelper';
-import { mockProducts } from '@/lib/mockData';
 
 export async function GET(req: NextRequest) {
   try {
@@ -17,19 +16,12 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Try to get products from Firestore, fallback to mockData
-    let productsMap: Record<string, any> = mockProducts;
-    try {
-      const allProducts = await getAllProducts();
-      if (allProducts && allProducts.length > 0) {
-        productsMap = {};
-        allProducts.forEach((p) => {
-          productsMap[p.id] = p;
-        });
-      }
-    } catch (error) {
-      console.warn('[check-duplicate] Using fallback mockData:', error);
-    }
+    // Always use real products from getAllProducts (with local fallback built-in)
+    const allProducts = await getAllProducts();
+    const productsMap: Record<string, any> = {};
+    allProducts.forEach((p) => {
+      productsMap[p.id] = p;
+    });
 
     const match = findSimilarProduct(title, brand || undefined, category || undefined, productsMap);
 

@@ -1,17 +1,25 @@
 import { NextResponse } from "next/server";
-import { mockProducts, mockReviews, getProductStats } from "@/lib/mockData";
+import { getAllProducts } from "@/lib/firestoreHelper";
+import { mockReviews, getProductStats } from "@/lib/mockData";
 
 export async function GET() {
-  const products = Object.entries(mockProducts).map(([id, product]) => {
-    const { avgRating, count } = getProductStats(id);
+  const allProducts = await getAllProducts();
+  const products = allProducts.map((product) => {
+    const { avgRating, count } = getProductStats(product.id);
     return {
-      id: isNaN(parseInt(id)) ? id : parseInt(id),
+      id: product.id,
       title: product.title,
       brand: product.brand,
       category: product.category,
-      price_cents: product.price_cents,
+      priceMin_cents: product.priceMin_cents,
+      priceMax_cents: product.priceMax_cents,
       avg_rating: parseFloat(avgRating),
       review_count: count,
+      // Include AI fields for image display
+      imageUrl: product.imageUrl,
+      imageSource: product.imageSource,
+      verificationStatus: product.verificationStatus,
+      aiRiskScore: product.aiRiskScore,
     };
   });
 

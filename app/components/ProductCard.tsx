@@ -5,12 +5,41 @@ interface ProductCardProps {
   title: string;
   brand: string | null;
   category: string;
-  price_cents: number | null;
+  priceMin_cents: number | null;
+  priceMax_cents: number | null;
   avg_rating: string;
   review_count: number;
+  // AI verification fields
+  imageUrl?: string | null;
+  imageSource?: 'user_uploaded' | 'ai_generated' | 'official';
+  verificationStatus?: 'verified' | 'unverified' | 'flagged';
+  aiRiskScore?: number | null;
 }
 
 export default function ProductCard(props: ProductCardProps) {
+  const getVerificationBadge = () => {
+    if (props.verificationStatus === 'verified') {
+      return {
+        icon: '✓',
+        text: 'Verified',
+        bg: 'rgba(34,197,94,0.1)',
+        color: '#15803d',
+      };
+    }
+    if (props.verificationStatus === 'unverified') {
+      return {
+        icon: '?',
+        text: 'Unverified',
+        bg: 'rgba(148,163,184,0.1)',
+        color: '#64748b',
+      };
+    }
+    // flagged status shouldn't appear here (filtered out), but just in case
+    return null;
+  };
+
+  const badge = getVerificationBadge();
+
   return (
     <a href={`/products/${props.id}`} style={{ textDecoration: "none" }}>
       <div
@@ -36,8 +65,32 @@ export default function ProductCard(props: ProductCardProps) {
           el.style.boxShadow = "none";
         }}
       >
+        {/* Product Image */}
+        {props.imageUrl && (
+          <div
+            style={{
+              width: "100%",
+              height: 160,
+              backgroundColor: "#f8fafc",
+              borderRadius: 12,
+              overflow: "hidden",
+              marginBottom: 8,
+            }}
+          >
+            <img
+              src={props.imageUrl}
+              alt={props.title}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
+          </div>
+        )}
+
         {/* Top row */}
-        <div style={{ display: "flex", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
           <span
             style={{
               fontSize: 11,
@@ -48,13 +101,27 @@ export default function ProductCard(props: ProductCardProps) {
               borderRadius: 9999,
               letterSpacing: "0.08em",
               textTransform: "uppercase",
+              whiteSpace: "nowrap",
             }}
           >
             {props.category}
           </span>
-          {props.brand && (
-            <span style={{ fontSize: 11, color: "#94a3b8" }}>
-              {props.brand}
+          {badge && (
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 600,
+                backgroundColor: badge.bg,
+                color: badge.color,
+                padding: "4px 8px",
+                borderRadius: 6,
+                display: "flex",
+                alignItems: "center",
+                gap: 3,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {badge.icon} {badge.text}
             </span>
           )}
         </div>
@@ -72,6 +139,20 @@ export default function ProductCard(props: ProductCardProps) {
           {props.title}
         </h3>
 
+        {/* Brand & AI Generated Tag */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+          {props.brand && (
+            <span style={{ fontSize: 12, color: "#94a3b8" }}>
+              {props.brand}
+            </span>
+          )}
+          {props.imageSource === 'ai_generated' && (
+            <span style={{ fontSize: 9, color: "#7c3aed", fontStyle: "italic" }}>
+              Image by AI
+            </span>
+          )}
+        </div>
+
         {/* Footer */}
         <div
           style={{
@@ -84,9 +165,25 @@ export default function ProductCard(props: ProductCardProps) {
             fontSize: 13,
           }}
         >
-          {props.price_cents && (
+          {props.priceMin_cents || props.priceMax_cents ? (
             <span style={{ fontWeight: 700, color: "#059669" }}>
-              ${(props.price_cents / 100).toFixed(2)}
+              {props.priceMin_cents && props.priceMax_cents ? (
+                <>
+                  ${(props.priceMin_cents / 100).toFixed(2)} – ${(props.priceMax_cents / 100).toFixed(2)}
+                </>
+              ) : props.priceMin_cents ? (
+                <>
+                  From ${(props.priceMin_cents / 100).toFixed(2)}
+                </>
+              ) : (
+                <>
+                  Up to ${(props.priceMax_cents! / 100).toFixed(2)}
+                </>
+              )}
+            </span>
+          ) : (
+            <span style={{ fontSize: 12, color: "#9ca3af" }}>
+              Price varies
             </span>
           )}
 

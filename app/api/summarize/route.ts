@@ -30,31 +30,31 @@ async function callOllama(prompt: string) {
   }
 }
 
-function parseAIResponse(response: string): { summary: string; pros: string[]; cons: string[] } {
+function parseAIResponse(response: string): { summary: string; pros: string[]; cons: string[]; bestFor?: string } {
   // Try to parse the response for structured data
-  const proMatch = response.match(/Pros?:?\s*([\s\S]*?)(?:Cons?:|$)/i);
-  const consMatch = response.match(/Cons?:?\s*([\s\S]*?)$/i);
+  const summaryMatch = response.match(/Summary:\s*([\s\S]*?)(?:Strengths:|Pros?:|$)/i);
+  const strengthsMatch = response.match(/Strengths:\s*([\s\S]*?)(?:Weaknesses:|Cons?:|$)/i);
+  const weaknessesMatch = response.match(/Weaknesses:\s*([\s\S]*?)(?:Best For:|$)/i);
+  const bestForMatch = response.match(/Best For:\s*([\s\S]*?)$/i);
 
-  const pros = proMatch
-    ? proMatch[1]
-        .split('\n')
-        .map((line) => line.replace(/^[-•*]\s*/, '').trim())
-        .filter((line) => line && line.length > 0)
-        .slice(0, 3)
-    : [];
+  const parsePart = (text: string): string[] => {
+    return text
+      .split('\n')
+      .map((line) => line.replace(/^[-•*]\s*/, '').trim())
+      .filter((line) => line && line.length > 0 && !line.startsWith('['));
+      // Get all items, don't force slice(0, 3)
+  };
 
-  const cons = consMatch
-    ? consMatch[1]
-        .split('\n')
-        .map((line) => line.replace(/^[-•*]\s*/, '').trim())
-        .filter((line) => line && line.length > 0)
-        .slice(0, 3)
-    : [];
+  const pros = strengthsMatch ? parsePart(strengthsMatch[1]) : [];
+  const cons = weaknessesMatch ? parsePart(weaknessesMatch[1]) : [];
+  const bestFor = bestForMatch ? bestForMatch[1].trim().split('\n')[0] : undefined;
+  const summary = summaryMatch ? summaryMatch[1].trim().split('\n')[0] : response.split('\n')[0];
 
   return {
-    summary: response.split('\n')[0] || response,
-    pros: pros.length > 0 ? pros : ['Good overall quality'],
-    cons: cons.length > 0 ? cons : ['Minor improvements needed'],
+    summary: summary || response,
+    pros: pros.length > 0 ? pros : ['Reliable and functional', 'Decent value', 'Gets the job done'],
+    cons: cons.length > 0 ? cons : ['Room for improvement in some areas', 'Not perfect for all use cases', 'Some tradeoffs to consider'],
+    bestFor,
   };
 }
 
@@ -175,28 +175,59 @@ export async function POST(req: Request) {
       review_text: text,
     }));
 
+    // Extract avgRating from body to adjust prompt
+    const avgRating = body.avgRating || 3.5;
+    const isLowRated = avgRating < 2.5;
+    const isMidRated = avgRating >= 2.5 && avgRating < 4.2;
+    const isHighRated = avgRating >= 4.2;
+
+    // Adjust strength/weakness counts based on rating
+    // High-rated: show MORE strengths, FEWER weaknesses
+    // Mid-rated: BALANCED on both sides
+    // Low-rated: show FEWER strengths, MORE weaknesses
+    let strengthsFormat = "- [what customers loved - be specific]\n- [recurring positive theme]\n- [key advantage mentioned]";
+    let weaknessesFormat = "- [main complaint or issue]\n- [recurring concern]";
+
+    if (isLowRated) {
+      // Bad product: 1 strength, 3 weaknesses
+      strengthsFormat = "- [any notable positive aspect, if applicable]";
+      weaknessesFormat = "- [main complaint or issue]\n- [recurring concern]\n- [major limitation or significant tradeoff]";
+    } else if (isMidRated) {
+      // Mid product: 2 strengths, 2 weaknesses
+      strengthsFormat = "- [what customers liked]\n- [another positive aspect]";
+      weaknessesFormat = "- [main complaint or issue]\n- [recurring concern]";
+    } else if (isHighRated) {
+      // High-rated: 3 strengths, 1 weakness - heavily weighted toward quality
+      strengthsFormat = "- [what customers loved - be specific]\n- [recurring positive theme]\n- [key advantage mentioned]";
+      weaknessesFormat = "- [any minor limitation or tradeoff, if applicable]";
+    }
+
     // Try to get AI insights
-    const prompt = `
-Analyze these customer reviews for "${productTitle}" and provide:
+    const prompt = `You are a product review analyst. Analyze these customer reviews for "${productTitle}" and provide clear, easy-to-understand insights without using percentages or numbers.
 
-1. A brief summary (2-3 sentences) of the overall sentiment
-2. Top 3 pros (what customers liked)
-3. Top 3 cons (what customers didn't like)
+TASK:
+1. Write a natural summary (2-3 sentences) capturing the overall customer sentiment and main themes
+2. List the strengths that customers consistently praised
+3. List the weaknesses or concerns customers mentioned
+4. Briefly describe who this product is best suited for
 
-Format your response as:
-Summary: [your summary here]
+Keep the language simple and accessible - imagine explaining this to a friend.
+Avoid statistics, percentages, or numerical comparisons.
+Focus on what actually matters to customers.
 
-Pros:
-- [pro 1]
-- [pro 2]
-- [pro 3]
+Format:
+Summary: [natural language summary of overall feedback]
 
-Cons:
-- [con 1]
-- [con 2]
-- [con 3]
+Strengths:
+${strengthsFormat}
 
-Reviews to analyze:
+Weaknesses:
+${weaknessesFormat}
+
+Best For:
+[1-2 sentences describing ideal customer type and use case]
+
+Customer Feedback:
 ${reviews
   .slice(0, 10)
   .map((r, i) => `${i + 1}. ${r.review_text}`)
@@ -210,7 +241,11 @@ ${reviews
       insights = parseAIResponse(aiResponse);
     } else {
       // Fallback to mock insights if Ollama fails
-      insights = generateMockInsights(reviews, productTitle);
+      const mockInsights = generateMockInsights(reviews, productTitle);
+      insights = {
+        ...mockInsights,
+        bestFor: `Users who prioritize ${mockInsights.pros[0]?.toLowerCase() || 'quality and reliability'}`
+      };
     }
 
     return NextResponse.json(insights);

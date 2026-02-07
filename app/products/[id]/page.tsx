@@ -1,5 +1,10 @@
 import ProductDetailClient from "../../components/ProductDetailClient";
+import RegenerateImageButton from "../../components/RegenerateImageButton";
 import { loadProducts, loadReviews } from "@/lib/persistentData";
+import { getProductById } from "@/lib/firestoreHelper";
+
+// Always revalidate/refresh to get latest reviews
+export const revalidate = 0;
 
 type Review = {
   id: string;
@@ -18,11 +23,57 @@ type Product = {
   title: string;
   brand: string | null;
   category: string;
-  price_cents: number | null;
+  priceMin_cents: number | null;
+  priceMax_cents: number | null;
   review_summary?: string;
+  // AI verification fields
+  imageUrl?: string | null;
+  imageSource?: 'user_uploaded' | 'ai_generated' | 'official';
+  verificationStatus?: 'verified' | 'unverified' | 'flagged';
+  aiRiskScore?: number | null;
+  aiReason?: string | null;
+  imageQuality?: 'ok' | 'bad' | 'pending';
 };
 
 async function getProduct(id: string): Promise<{ product: Product; reviews: Review[] }> {
+  // Try to load from Firestore first
+  try {
+    const firestoreProduct = await getProductById(id);
+    if (firestoreProduct) {
+      const reviews = loadReviews();
+      const productReviews = reviews[id] || [];
+      // Sort reviews by date - newest first
+      const sortedReviews = productReviews.sort((a, b) => {
+        try {
+          const dateA = new Date(a.created_at).getTime();
+          const dateB = new Date(b.created_at).getTime();
+          return dateB - dateA; // Newest first
+        } catch {
+          return 0;
+        }
+      });
+
+      return {
+        product: {
+          id: firestoreProduct.id,
+          title: firestoreProduct.title,
+          brand: firestoreProduct.brand,
+          category: firestoreProduct.category,
+          priceMin_cents: firestoreProduct.priceMin_cents,
+          priceMax_cents: firestoreProduct.priceMax_cents,
+          imageUrl: firestoreProduct.imageUrl,
+          imageSource: firestoreProduct.imageSource,
+          verificationStatus: firestoreProduct.verificationStatus,
+          aiRiskScore: firestoreProduct.aiRiskScore,
+          aiReason: firestoreProduct.aiReason,
+        },
+        reviews: sortedReviews,
+      };
+    }
+  } catch (error) {
+    console.log('Firestore fetch failed, using fallback:', error);
+  }
+
   // Always load fresh from disk to get the latest data (including newly created products)
   const products = loadProducts();
   const reviews = loadReviews();
@@ -37,7 +88,8 @@ async function getProduct(id: string): Promise<{ product: Product; reviews: Revi
         title: undefined as any,
         brand: null,
         category: '',
-        price_cents: null,
+        priceMin_cents: null,
+        priceMax_cents: null,
       },
       reviews: [],
     };
@@ -48,7 +100,8 @@ async function getProduct(id: string): Promise<{ product: Product; reviews: Revi
     title: product.title,
     brand: product.brand,
     category: product.category,
-    price_cents: product.price_cents,
+    priceMin_cents: (product as any).priceMin_cents || (product as any).price_cents || null,
+    priceMax_cents: (product as any).priceMax_cents || (product as any).price_cents || null,
   };
 
   const productReviews = reviews[id] || [];
@@ -130,6 +183,41 @@ export default async function ProductPage({
             <span>Back to products</span>
           </a>
 
+          {/* Product Image */}
+          {product.imageUrl && (
+            <div
+              style={{
+                width: "100%",
+                height: 300,
+                backgroundColor: "#f1f5f9",
+                borderRadius: 16,
+                overflow: "hidden",
+                marginBottom: 16,
+              }}
+            >
+              <img
+                src={product.imageUrl}
+                alt={product.title}
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                }}
+              />
+            </div>
+          )}
+
+          {/* Regenerate Image Button (AI images only) */}
+          {product.imageUrl && product.imageSource === "ai_generated" && (
+            <div style={{ marginBottom: 32 }}>
+              <RegenerateImageButton
+                productId={id}
+                productTitle={product.title}
+                imageSource={product.imageSource}
+              />
+            </div>
+          )}
+
           <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: 48, alignItems: "start" }}>
             <div>
               <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 16 }}>
@@ -163,7 +251,7 @@ export default async function ProductPage({
                 </div>
               </div>
 
-              {product.price_cents && (
+              {product.priceMin_cents || product.priceMax_cents ? (
                 <div
                   style={{
                     fontSize: 32,
@@ -173,7 +261,30 @@ export default async function ProductPage({
                     marginBottom: 8,
                   }}
                 >
-                  ${(product.price_cents / 100).toFixed(2)}
+                  {product.priceMin_cents && product.priceMax_cents ? (
+                    <>
+                      ${(product.priceMin_cents / 100).toFixed(2)} – ${(product.priceMax_cents / 100).toFixed(2)}
+                    </>
+                  ) : product.priceMin_cents ? (
+                    <>
+                      From ${(product.priceMin_cents / 100).toFixed(2)}
+                    </>
+                  ) : (
+                    <>
+                      Up to ${(product.priceMax_cents! / 100).toFixed(2)}
+                    </>
+                  )}
+                </div>
+              ) : (
+                <div
+                  style={{
+                    fontSize: 16,
+                    color: "#9ca3af",
+                    marginTop: 16,
+                    marginBottom: 8,
+                  }}
+                >
+                  Price varies by location and retailer
                 </div>
               )}
 
@@ -192,6 +303,60 @@ export default async function ProductPage({
                     {product.category}
                   </span>
                 )}
+                
+                {/* Verification Badge */}
+                {product.verificationStatus === 'verified' && (
+                  <span
+                    style={{
+                      fontSize: 13,
+                      backgroundColor: "rgba(34,197,94,0.1)",
+                      color: "#15803d",
+                      fontWeight: 600,
+                      padding: "6px 12px",
+                      borderRadius: 9999,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    ✓ Verified Listing
+                  </span>
+                )}
+                {product.verificationStatus === 'unverified' && (
+                  <span
+                    style={{
+                      fontSize: 13,
+                      backgroundColor: "rgba(148,163,184,0.1)",
+                      color: "#64748b",
+                      fontWeight: 600,
+                      padding: "6px 12px",
+                      borderRadius: 9999,
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                    }}
+                  >
+                    ? Not Yet Verified
+                  </span>
+                )}
+
+                {/* Image Source */}
+                {product.imageSource === 'ai_generated' && (
+                  <span
+                    style={{
+                      fontSize: 12,
+                      backgroundColor: "rgba(124,58,237,0.1)",
+                      color: "#7c3aed",
+                      fontWeight: 500,
+                      padding: "4px 10px",
+                      borderRadius: 6,
+                      fontStyle: "italic",
+                    }}
+                  >
+                    🤖 Image generated with AI
+                  </span>
+                )}
+
                 {reviews.length > 0 && (
                   <>
                     <span

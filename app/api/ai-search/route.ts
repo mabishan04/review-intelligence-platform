@@ -39,7 +39,7 @@ function buildCatalogForAI(): CatalogForAI[] {
       title: p.title,
       brand: p.brand ?? null,
       category: p.category,
-      price: p.price_cents != null ? p.price_cents / 100 : null,
+      price: p.priceMin_cents != null ? p.priceMin_cents / 100 : null,
       avgRating: Number(stats.avgRating || "0"),
       reviewCount: stats.count,
     };
