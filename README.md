@@ -45,8 +45,13 @@ Review Intelligence Platform is a sophisticated web application designed to stre
 
 ### 🤖 AI-Powered Features
 - **Smart Search** - AI-powered product discovery using natural language
-- **Review Summarization** - Automatic summary generation from multiple reviews
-- **Decision Insights** - Intelligent pros/cons extraction
+- **Review Summarization** - Automatic summary generation with quality-aware pros/cons counts
+- **Quality-Aware Insights** - Balances strengths and weaknesses based on product rating
+  - Good products (≥4.2★): Show 3 strengths, 1 consideration
+  - Mid products (2.5-4.2★): Show 2 strengths, 2 considerations (balanced)
+  - Bad products (<2.5★): Show 1 strength, 3 considerations
+- **Best For Recommendations** - Personalized suggestions with honest trade-off warnings for lower-rated products
+- **Natural Language Summaries** - AI insights without confusing numbers or percentages
 - **Shopping Assistant Chat** - Conversational AI for product recommendations
 
 ### 🎨 Modern User Interface
@@ -417,4 +422,11 @@ This project is licensed under the **MIT License** - see [LICENSE](LICENSE) file
 
 **Made with ❤️ by Mabishan**
 
-*Last Updated: February 2, 2026*
+*Last Updated: February 6, 2026*
+
+### Recent Updates (Feb 6, 2026)
+- ✨ Enhanced AI summaries with natural language (no confusing numbers/percentages)
+- 🎨 Added "Best For" personalized recommendation section with honest product positioning
+- 📊 Implemented quality-aware UI that visually communicates product ratings through strength/weakness proportions
+- 🔧 Fixed review persistence bugs (edit/delete operations, page caching)
+- 🛠️ Resolved compilation errors and verified clean codebase
