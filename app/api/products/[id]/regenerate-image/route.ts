@@ -9,7 +9,7 @@ import { generateProductImageWithAI } from '@/lib/aiProductVerification';
  */
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: any
 ) {
   try {
     // Check admin token
