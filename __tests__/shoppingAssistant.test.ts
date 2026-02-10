@@ -97,7 +97,7 @@ describe('Shopping Assistant & AI Features', () => {
       ];
 
       const isRelevant = (product: any) => 
-        product.features.some(f => ['portable', 'powerful'].includes(f));
+        product.features.some((f: string) => ['portable', 'powerful'].includes(f));
 
       const results = matchedProducts.filter(isRelevant);
 

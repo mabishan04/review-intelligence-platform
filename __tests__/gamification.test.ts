@@ -82,9 +82,9 @@ describe('Gamification System', () => {
     });
 
     it('should create category tracking for new categories', () => {
-      const reviewCountByCategory = {};
+      const reviewCountByCategory: Record<string, number> = {};
       reviewCountByCategory.clothing = 1;
-      
+
       expect(reviewCountByCategory.clothing).toBe(1);
     });
 

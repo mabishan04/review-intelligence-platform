@@ -235,7 +235,7 @@ describe('Helpful Votes & User Interactions', () => {
 
     it('should allow voting on others\' reviews', () => {
       const userId = 'user123';
-      const reviewAuthor = 'user456';
+      const reviewAuthor: string = 'user456';
 
       const canVote = userId !== reviewAuthor;
       expect(canVote).toBe(true);

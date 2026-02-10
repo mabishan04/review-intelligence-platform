@@ -221,13 +221,13 @@ describe('Gamification System', () => {
     });
 
     it('should track expert status per category', () => {
-      const categoryExpertise = {
+      const categoryExpertise: Record<string, boolean> = {
         electronics: true,
         books: false,
         clothing: true,
       };
 
-      const expertCategories = Object.keys(categoryExpertise).filter(cat => categoryExpertise[cat]);
+      const expertCategories = Object.keys(categoryExpertise).filter(cat => categoryExpertise[cat] === true);
 
       expect(expertCategories.length).toBe(2);
       expect(expertCategories).toContain('electronics');

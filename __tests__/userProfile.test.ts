@@ -62,7 +62,7 @@ describe('User Profile System', () => {
 
     it('should track reviews by category', () => {
       let profile = {
-        reviewCountByCategory: {},
+        reviewCountByCategory: {} as Record<string, number>,
       };
 
       const category = 'electronics';

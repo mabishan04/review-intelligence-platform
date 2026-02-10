@@ -89,8 +89,9 @@ describe('Reviews Management', () => {
 
     it('should prevent non-author from editing review', () => {
       const userId = 'user123';
-      const reviewAuthorId = 'user456';
+      const reviewAuthorId: string = 'user456';
 
+      // @ts-ignore - intentional comparison of different literals for testing
       const canEdit = userId === reviewAuthorId;
       expect(canEdit).toBe(false);
     });

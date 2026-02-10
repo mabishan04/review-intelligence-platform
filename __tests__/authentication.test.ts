@@ -77,6 +77,7 @@ describe('Authentication & User Management', () => {
       const userId = 'user123';
       const reviewOwnerId = 'user456';
 
+      // @ts-ignore - intentional comparison of different literals for testing
       const canEditReview = userId === reviewOwnerId;
       expect(canEditReview).toBe(false);
     });
