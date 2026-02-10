@@ -3,6 +3,8 @@ import { createProduct, getAllProducts, updateProduct } from '@/lib/firestoreHel
 import { findSimilarProduct } from '@/lib/duplicateChecker';
 import { processProductWithAI } from '@/lib/aiProductVerification';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     console.log('[products/create] Received POST request');

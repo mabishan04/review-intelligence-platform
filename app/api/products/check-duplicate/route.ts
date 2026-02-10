@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { findSimilarProduct } from '@/lib/duplicateChecker';
 import { getAllProducts } from '@/lib/firestoreHelper';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);

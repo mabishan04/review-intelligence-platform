@@ -41,6 +41,11 @@ export type Review = {
   created_at: string;
   wouldRecommend?: boolean;
   authorClientId?: string;
+  // Gamification fields
+  userId?: string;
+  category?: string;
+  helpfulCount?: number;
+  helpfulVoters?: string[];
 };
 
 // Ensure data directory exists

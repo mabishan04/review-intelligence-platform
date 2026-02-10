@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAllProductsIncludingFlagged, updateProduct } from '@/lib/firestoreHelper';
 import { generateProductImageWithAI, verifyProductWithAI } from '@/lib/aiProductVerification';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * Admin endpoint to backfill images and verification for existing products
  * POST /api/admin/process-existing-products

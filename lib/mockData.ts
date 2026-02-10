@@ -79,6 +79,8 @@ export function addReview(input: {
   reviewerEmail?: string;
   wouldRecommend?: boolean;
   authorClientId?: string;
+  userId?: string;
+  category?: string;
 }): Review {
   const {
     productId,
@@ -90,6 +92,8 @@ export function addReview(input: {
     reviewerEmail,
     wouldRecommend,
     authorClientId,
+    userId,
+    category,
   } = input;
 
   // Always reload latest from disk in case another request changed it
@@ -106,6 +110,10 @@ export function addReview(input: {
     created_at: new Date().toISOString(),
     wouldRecommend,
     authorClientId,
+    userId: userId || 'demo-user',
+    category,
+    helpfulCount: 0,
+    helpfulVoters: [],
   };
 
   const list = reviewsByProduct[productId] || [];

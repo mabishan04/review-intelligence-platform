@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getAllProducts } from "@/lib/firestoreHelper";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const products = await getAllProducts();

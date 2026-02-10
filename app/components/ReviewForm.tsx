@@ -79,6 +79,7 @@ export default function ReviewForm({ productId, productTitle, onReviewSubmitted 
           source,
           wouldRecommend,
           authorClientId: clientId,
+          userId: clientId, // Use clientId as userId for demo purposes
         }),
       });
 

@@ -25,6 +25,11 @@ type Review = {
   created_at: string;
   wouldRecommend?: boolean;
   authorClientId?: string;
+  // Gamification fields
+  userId?: string;
+  category?: string;
+  helpfulCount?: number;
+  helpfulVoters?: string[];
 };
 
 type InsightData = {
@@ -63,10 +68,55 @@ export default function ProductDetailClient({
   const [editRecommend, setEditRecommend] = useState(false);
   const [editSubmitting, setEditSubmitting] = useState(false);
   const [clientId, setClientId] = useState<string | null>(null);
+  const [helpfulSubmitting, setHelpfulSubmitting] = useState<Set<string>>(new Set());
+  const [userVotedReviews, setUserVotedReviews] = useState<Set<string>>(new Set());
+  const [userProfiles, setUserProfiles] = useState<Record<string, any>>({});
+
+  // Fetch user profile from Firebase for gamification badges
+  const fetchUserProfile = async (userId: string) => {
+    if (userProfiles[userId]) return userProfiles[userId];
+
+    try {
+      const res = await fetch(`/api/user-profile/${userId}`);
+      if (res.ok) {
+        const profile = await res.json();
+        console.log(`[badge] Fetched profile for ${userId}:`, profile);
+        console.log(`[badge] trustedReviewer:`, profile.badges?.trustedReviewer);
+        console.log(`[badge] categoryExpert:`, profile.categoryExpert);
+        setUserProfiles((prev) => ({ ...prev, [userId]: profile }));
+        return profile;
+      } else {
+        console.warn(`[badge] API returned ${res.status} for ${userId}`);
+      }
+    } catch (err) {
+      console.warn(`[badge] Could not fetch profile for ${userId}:`, err);
+    }
+    return null;
+  };
 
   // Initialize clientId on client-side only to avoid hydration mismatch
   useEffect(() => {
-    setClientId(getClientId());
+    const id = getClientId();
+    setClientId(id);
+    // Initialize userVotedReviews based on initial reviews
+    if (id) {
+      const votedReviewIds = new Set<string>();
+      initialReviews.forEach((r) => {
+        if (r.helpfulVoters?.includes(id)) {
+          votedReviewIds.add(r.id);
+        }
+      });
+      setUserVotedReviews(votedReviewIds);
+    }
+
+    // Fetch user profiles for all reviews
+    const uniqueUserIds = new Set<string>();
+    initialReviews.forEach((r) => {
+      if (r.userId) uniqueUserIds.add(r.userId);
+    });
+    uniqueUserIds.forEach((userId) => {
+      fetchUserProfile(userId);
+    });
   }, []);
 
   const generateInsights = async () => {
@@ -182,6 +232,56 @@ export default function ProductDetailClient({
       console.error('Error updating review:', err);
       alert('Error updating review: ' + (err instanceof Error ? err.message : 'Unknown error'));
       setEditSubmitting(false);
+    }
+  };
+
+  const handleMarkHelpful = async (reviewId: string) => {
+    if (helpfulSubmitting.has(reviewId)) return;
+
+    setHelpfulSubmitting((prev) => new Set(prev).add(reviewId));
+
+    try {
+      const res = await fetch(`/api/reviews/${reviewId}/helpful`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-user-id': clientId || 'demo-voter',
+        },
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        console.error('API Error:', errorData);
+        alert(`Failed to mark review as helpful: ${errorData.error || 'Unknown error'}`);
+      } else {
+        const data = await res.json();
+        setReviews((prev) =>
+          prev.map((r) =>
+            r.id === reviewId
+              ? { ...r, helpfulCount: data.helpfulCount }
+              : r
+          )
+        );
+        // Update userVotedReviews based on API response
+        setUserVotedReviews((prev) => {
+          const updated = new Set(prev);
+          if (data.hasVoted) {
+            updated.add(reviewId);
+          } else {
+            updated.delete(reviewId);
+          }
+          return updated;
+        });
+      }
+    } catch (err) {
+      console.error('Error marking helpful:', err);
+      alert('Error marking review as helpful');
+    } finally {
+      setHelpfulSubmitting((prev) => {
+        const updated = new Set(prev);
+        updated.delete(reviewId);
+        return updated;
+      });
     }
   };
 
@@ -670,7 +770,7 @@ export default function ProductDetailClient({
                           </span>
                         )}
                       </div>
-                      <div style={{ fontSize: 12, color: '#6b7280', display: 'flex', gap: 8 }}>
+                      <div style={{ fontSize: 12, color: '#6b7280', display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
                         {r.reviewerName && (
                           <>
                             <span style={{ fontWeight: 500 }}>
@@ -689,6 +789,59 @@ export default function ProductDetailClient({
                         )}
                         <span>{new Date(r.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                       </div>
+                      {/* Gamification badges */}
+                      {r.userId && userProfiles[r.userId] && (
+                        (userProfiles[r.userId]?.badges?.trustedReviewer || 
+                         (r.category && userProfiles[r.userId]?.categoryExpert?.includes(r.category)) ||
+                         (r.helpfulCount && r.helpfulCount > 0)) && (
+                          <div style={{ fontSize: 11, color: '#6b7280', display: 'flex', gap: 6, marginTop: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                            {userProfiles[r.userId]?.badges?.trustedReviewer && (
+                              <span
+                                style={{
+                                  backgroundColor: '#dbeafe',
+                                  color: '#1e40af',
+                                  padding: '2px 8px',
+                                  borderRadius: 12,
+                                  fontWeight: 600,
+                                  fontSize: 10,
+                                }}
+                                title={`Trusted Reviewer - ${userProfiles[r.userId]?.reviewCount || 0} reviews`}
+                              >
+                                👤 Trusted Reviewer
+                              </span>
+                            )}
+                            {r.category && userProfiles[r.userId]?.categoryExpert?.includes(r.category) && (
+                              <span
+                                style={{
+                                  backgroundColor: '#fef3c7',
+                                  color: '#92400e',
+                                  padding: '2px 8px',
+                                  borderRadius: 12,
+                                  fontWeight: 600,
+                                  fontSize: 10,
+                                }}
+                                title={`Expert in ${r.category}`}
+                              >
+                                👑 {r.category} Expert
+                              </span>
+                            )}
+                            {r.helpfulCount && r.helpfulCount > 0 && (
+                              <span
+                                style={{
+                                  backgroundColor: '#dcfce7',
+                                  color: '#166534',
+                                  padding: '2px 8px',
+                                  borderRadius: 12,
+                                  fontWeight: 500,
+                                  fontSize: 10,
+                                }}
+                              >
+                                ✓ Helpful x{r.helpfulCount}
+                              </span>
+                            )}
+                          </div>
+                        )
+                      )}
                     </div>
                     <div style={{
                       fontSize: 20,
@@ -757,57 +910,81 @@ export default function ProductDetailClient({
                     </div>
                   )}
 
-                  {/* Delete button for own reviews */}
-                  {isMine && (
-                    <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-                      <button
-                        onClick={() => handleEditReview(r)}
-                        style={{
-                          padding: '6px 10px',
-                          borderRadius: 6,
-                          border: '1px solid #bfdbfe',
-                          background: '#eff6ff',
-                          color: '#0c4a6e',
-                          cursor: 'pointer',
-                          fontSize: 12,
-                          fontWeight: 600,
-                        }}
-                      >
-                        ✏️ Edit
-                      </button>
-                      <button
-                        onClick={async () => {
-                          if (!window.confirm('Are you sure you want to delete this review?')) return;
-                          try {
-                            const res = await fetch(`/api/reviews/${r.id}`, {
-                              method: 'DELETE',
-                            });
-                            if (!res.ok) {
-                              const errorData = await res.json().catch(() => ({}));
-                              alert(`Failed to delete review: ${errorData.error || 'Unknown error'}`);
-                              return;
+                  {/* Delete button for own reviews + Helpful button */}
+                  <div style={{ marginTop: 12, display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <button
+                      onClick={() => handleMarkHelpful(r.id)}
+                      disabled={helpfulSubmitting.has(r.id)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: 6,
+                        border: userVotedReviews.has(r.id) ? '1px solid #10b981' : '1px solid #d1d5db',
+                        background: userVotedReviews.has(r.id) ? '#ecfdf5' : '#f9fafb',
+                        color: userVotedReviews.has(r.id) ? '#059669' : '#374151',
+                        cursor: helpfulSubmitting.has(r.id) ? 'not-allowed' : 'pointer',
+                        fontSize: 12,
+                        fontWeight: 600,
+                        opacity: helpfulSubmitting.has(r.id) ? 0.6 : 1,
+                      }}
+                      title={userVotedReviews.has(r.id) ? 'Click to undo your helpful vote' : 'Mark as helpful'}
+                    >
+                      {userVotedReviews.has(r.id) ? '✓ Helpful' : '👍 Helpful'} ({r.helpfulCount ?? 0})
+                    </button>
+                    <span style={{ fontSize: 11, color: '#9ca3af' }}>
+                      {userVotedReviews.has(r.id) ? '✓ You found this helpful' : 'Helps improve AI summaries'}
+                    </span>
+                    {isMine && (
+                      <>
+                        <span style={{ marginLeft: 'auto' }} />
+                        <button
+                          onClick={() => handleEditReview(r)}
+                          style={{
+                            padding: '6px 10px',
+                            borderRadius: 6,
+                            border: '1px solid #bfdbfe',
+                            background: '#eff6ff',
+                            color: '#0c4a6e',
+                            cursor: 'pointer',
+                            fontSize: 12,
+                            fontWeight: 600,
+                          }}
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          onClick={async () => {
+                            if (!window.confirm('Are you sure you want to delete this review?')) return;
+                            try {
+                              const res = await fetch(`/api/reviews/${r.id}`, {
+                                method: 'DELETE',
+                              });
+                              if (!res.ok) {
+                                const errorData = await res.json().catch(() => ({}));
+                                alert(`Failed to delete review: ${errorData.error || 'Unknown error'}`);
+                                return;
+                              }
+                              setReviews((prev) => prev.filter((rev) => rev.id !== r.id));
+                            } catch (err) {
+                              console.error('Error deleting review:', err);
+                              alert('Error deleting review: ' + (err instanceof Error ? err.message : 'Unknown error'));
                             }
-                            setReviews((prev) => prev.filter((rev) => rev.id !== r.id));
-                          } catch (err) {
-                            console.error('Error deleting review:', err);
-                            alert('Error deleting review: ' + (err instanceof Error ? err.message : 'Unknown error'));
-                          }
-                        }}
-                        style={{
-                          padding: '6px 10px',
-                          borderRadius: 6,
-                          border: '1px solid #fecaca',
-                          background: '#fef2f2',
-                          color: '#b91c1c',
-                          cursor: 'pointer',
-                          fontSize: 12,
-                          fontWeight: 600,
-                        }}
-                      >
-                        🗑️ Delete
-                      </button>
-                    </div>
-                  )}
+                          }}
+                          style={{
+                            padding: '6px 10px',
+                            borderRadius: 6,
+                            border: '1px solid #fecaca',
+                            background: '#fef2f2',
+                            color: '#b91c1c',
+                            cursor: 'pointer',
+                            fontSize: 12,
+                            fontWeight: 600,
+                          }}
+                        >
+                          🗑️ Delete
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               );
             })}

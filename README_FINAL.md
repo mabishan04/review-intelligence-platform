@@ -6,11 +6,6 @@ A modern, AI-powered review management system with advanced gamification feature
 
 The Review Intelligence Platform is a full-stack web application engineered to enhance user engagement through intelligent review aggregation, AI-powered product recommendations, and a comprehensive gamification system. The platform leverages OpenAI's APIs for intelligent product verification and review summarization, while maintaining a robust Firebase-backed architecture for real-time data synchronization.
 
-### 🚀 Live Demo
-**[View Live App](https://review-intelligence-platform.onrender.com)** (Deployed on Render)
-
-> **Note:** This project is deployed on Render's free tier. The application may spin down after 15 minutes of inactivity to conserve resources. The first request after inactivity will trigger a restart (typically 30-60 seconds). For full performance, see [Deployment](#deployment) section.
-
 **Live Features:**
 - ⭐ Advanced review management system with rich metadata
 - 🎮 Comprehensive gamification with points and badges
@@ -364,29 +359,7 @@ Response: {
 
 ## Deployment
 
-### Render (Quick & Easy)
-Perfect for portfolio projects and demos.
-
-**Steps:**
-1. Push code to GitHub
-2. Go to [render.com](https://render.com), sign up with GitHub
-3. Create new **Web Service** → Connect GitHub repo
-4. Set Build Command: `npm install && npm run build`
-5. Set Start Command: `npm start`
-6. Add Environment Variables (from `.env.local`):
-   - `NEXT_PUBLIC_FIREBASE_*` (all Firebase vars)
-   - `OPENAI_API_KEY`
-   - `OPENAI_MODEL=gpt-4o-mini`
-7. Deploy!
-
-**Free Tier Details:**
-- Spins down after 15 mins of inactivity
-- First request after spin-down takes 30-60 seconds
-- Perfect for job interviews & portfolio
-
-**Paid Tier:** $7-12/month for always-on service
-
-### Vercel (Recommended for Production)
+### Vercel (Recommended)
 ```bash
 npm i -g vercel
 vercel login

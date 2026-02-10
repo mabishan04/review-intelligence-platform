@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getProductById, updateProduct } from '@/lib/firestoreHelper';
 import { generateProductImageWithAI } from '@/lib/aiProductVerification';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * POST /api/products/[id]/regenerate-image
  * Admin-only endpoint to regenerate just the AI image for a product

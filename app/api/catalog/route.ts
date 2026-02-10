@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getAllProducts } from "@/lib/firestoreHelper";
 import { mockReviews, getProductStats } from "@/lib/mockData";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   const allProducts = await getAllProducts();
   const products = allProducts.map((product) => {

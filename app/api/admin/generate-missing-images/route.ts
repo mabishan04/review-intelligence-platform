@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAllProducts, updateProduct } from '@/lib/firestoreHelper';
 import { generateProductImageWithAI } from '@/lib/aiProductVerification';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     // Admin token guard
